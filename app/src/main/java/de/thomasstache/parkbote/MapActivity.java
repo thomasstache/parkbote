@@ -46,9 +46,11 @@ public class MapActivity extends AppCompatActivity
 			@Override
 			public void onClick(View v)
 			{
-				Snackbar.make(v, "I'll locate you soon!", Snackbar.LENGTH_LONG)
+				Snackbar.make(v, "Flying home!", Snackbar.LENGTH_LONG)
 						.setAction("Action", null)
 						.show();
+
+				mapView.animateCamera(homeCamera, 2000, null);
 			}
 		});
 	}
