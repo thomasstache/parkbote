@@ -1,6 +1,8 @@
 package de.thomasstache.parkbote;
 
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -32,6 +34,23 @@ public class MapActivity extends AppCompatActivity
 		mapView.moveCamera(homeCamera);
 
 		mapView.onCreate(savedInstanceState);
+
+		setupLocateMeButton();
+	}
+
+	private void setupLocateMeButton()
+	{
+		final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_locateMe);
+		fab.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				Snackbar.make(v, "I'll locate you soon!", Snackbar.LENGTH_LONG)
+						.setAction("Action", null)
+						.show();
+			}
+		});
 	}
 
 	private void setupMapView()
