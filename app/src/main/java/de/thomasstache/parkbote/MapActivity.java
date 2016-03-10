@@ -1,12 +1,18 @@
 package de.thomasstache.parkbote;
 
+import android.Manifest;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 
+import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -18,8 +24,21 @@ public class MapActivity extends AppCompatActivity
 {
 	private static final String TAG = "ParkboteApp";
 
+	private static final String PREF_FILE_KEY = "de.thomasstache.parkbote.PREFERENCE_FILE";
+
+	private static final String PREF_PARKED = "isParked";
+	private static final String PREF_LOCATION_LON = "parkedLocationLongitude";
+	private static final String PREF_LOCATION_LAT = "parkedLocationLatitude";
+
+	public static final int DEFAULT_ZOOM = 15;
+
+	private State state;
+
 	private MapView mapView = null;
-	private CameraUpdate homeCamera;
+	private Marker parkingMarker = null;
+
+	private FloatingActionButton fabLeave;
+	private FloatingActionButton fabPark;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -27,48 +46,233 @@ public class MapActivity extends AppCompatActivity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map);
 
-		Log.i(TAG, "Running onCreate()");
+		final SharedPreferences preferences = getAppPreferences();
+
+		state = loadStateFromPrefs(preferences);
 
 		setupMapView();
-		setInitialCamera();
-		mapView.moveCamera(homeCamera);
+
+		mapView.moveCamera(createCameraUpdate(state.latLng, DEFAULT_ZOOM));
 
 		mapView.onCreate(savedInstanceState);
 
-		setupLocateMeButton();
+		setupParkButton();
+		setupLeaveButton();
+
+		updateFabVisibility();
+
+		if (state.isParked)
+		{
+			markParkingLocationOnMap(state.latLng);
+		}
 	}
 
-	private void setupLocateMeButton()
+	private SharedPreferences getAppPreferences()
 	{
-		final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_locateMe);
-		fab.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View v)
-			{
-				Snackbar.make(v, "Flying home!", Snackbar.LENGTH_LONG)
-						.setAction("Action", null)
-						.show();
+		return getSharedPreferences(PREF_FILE_KEY, MODE_PRIVATE);
+	}
 
-				mapView.animateCamera(homeCamera, 2000, null);
+	private State loadStateFromPrefs(SharedPreferences preferences)
+	{
+		final State state = new State();
+
+		state.isParked = preferences.getBoolean(PREF_PARKED, false);
+		if (state.isParked)
+		{
+			// LatLng is only valid if we were parked
+			String latitude = preferences.getString(PREF_LOCATION_LAT, "");
+			String longitude = preferences.getString(PREF_LOCATION_LON, "");
+
+			if (!latitude.isEmpty() && ! longitude.isEmpty())
+			{
+				state.latLng = parseLatLng(latitude, longitude);
 			}
-		});
+		}
+
+		return state;
+	}
+
+	private boolean saveStateToPrefs(SharedPreferences preferences)
+	{
+		final SharedPreferences.Editor editor = preferences.edit();
+
+		final String latitude;
+		final String longitude;
+
+		if (state.latLng != null)
+		{
+			latitude = Double.toString(state.latLng.getLatitude());
+			longitude = Double.toString(state.latLng.getLongitude());
+		}
+		else
+		{
+			latitude = "";
+			longitude = "";
+		}
+
+		editor.putBoolean(PREF_PARKED, state.isParked)
+		      .putString(PREF_LOCATION_LAT, latitude)
+		      .putString(PREF_LOCATION_LON, longitude);
+
+		return editor.commit();
 	}
 
 	private void setupMapView()
 	{
 		mapView = (MapView) findViewById(R.id.map);
 		mapView.setStyleUrl(Style.MAPBOX_STREETS);
+
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+				&& ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+		{
+			// TODO: Consider calling
+			//    ActivityCompat#requestPermissions
+			// here to request the missing permissions, and then overriding
+			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+			//                                          int[] grantResults)
+			// to handle the case where the user grants the permission. See the documentation
+			// for ActivityCompat#requestPermissions for more details.
+
+			mapView.setMyLocationEnabled(false);
+		}
+		else
+		{
+			// show current user location
+			mapView.setMyLocationEnabled(true);
+		}
 	}
 
-	private void setInitialCamera()
+	private void setupParkButton()
+	{
+		final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_parkHere);
+		fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
+		fab.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				final boolean bOk = saveCurrentLocation();
+
+				Snackbar.make(v, bOk ? "Successfully parked." : "Location not saved...", Snackbar.LENGTH_LONG)
+				        .setAction("Action", null)
+				        .show();
+
+				if (bOk)
+				{
+					mapView.animateCamera(createCameraUpdate(state.latLng, DEFAULT_ZOOM + 2), 800, null);
+					updateFabVisibility();
+				}
+			}
+		});
+
+		this.fabPark = fab;
+	}
+
+	private void setupLeaveButton()
+	{
+		final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_leave);
+		fab.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				final LatLng oldLatLng = new LatLng(state.latLng);
+
+				boolean bOk = clearParkingLocation();
+
+				Snackbar.make(v, bOk ? "Parked out." : "Update not saved...", Snackbar.LENGTH_LONG)
+				        .show();
+
+				if (bOk)
+				{
+					mapView.animateCamera(createCameraUpdate(oldLatLng, DEFAULT_ZOOM), 800, null);
+					updateFabVisibility();
+				}
+			}
+		});
+
+		this.fabLeave = fab;
+	}
+
+	private void updateFabVisibility()
+	{
+		fabPark.setVisibility(!state.isParked ? View.VISIBLE : View.GONE);
+		fabLeave.setVisibility(state.isParked ? View.VISIBLE : View.GONE);
+	}
+
+	/**
+	 * Update State with the current map center position. Save the state in SharedPreferences.
+	 * @return true if saved successfully
+	 */
+	private boolean saveCurrentLocation()
+	{
+		final LatLng latLng = mapView.getLatLng();
+
+		this.state.isParked = true;
+		this.state.latLng = latLng;
+
+		markParkingLocationOnMap(latLng);
+
+		return saveStateToPrefs(getAppPreferences());
+	}
+
+	/**
+	 * Clear the parking location in our {@code State}. Save the state in SharedPreferences.
+	 * @return true if saved successfully
+	 */
+	private boolean clearParkingLocation()
+	{
+		state.isParked = false;
+		state.latLng = null;
+
+		if (parkingMarker != null)
+			mapView.removeMarker(parkingMarker);
+
+		return saveStateToPrefs(getAppPreferences());
+	}
+
+	private LatLng parseLatLng(String latitude, String longitude)
+	{
+		final double lat = Double.parseDouble(latitude);
+		final double lon = Double.parseDouble(longitude);
+
+		// TODO add error checking
+
+		return new LatLng(lat, lon);
+	}
+
+	/**
+	 * Returns a {@code CameraUpdate} to {@link MapView#moveCamera(CameraUpdate) move} or
+	 * {@link MapView#animateCamera(CameraUpdate) smoothly fly} the {@code MapView} to a new viewport.
+	 */
+	private CameraUpdate createCameraUpdate(LatLng latLng, int zoom)
 	{
 		CameraPosition cam = new CameraPosition.Builder()
-				.target(new LatLng(51.063, 13.746))
-				.zoom(14)
+				.target(latLng)
+				.zoom(zoom)
 				.build();
 
-		homeCamera = CameraUpdateFactory.newCameraPosition(cam);
+		return CameraUpdateFactory.newCameraPosition(cam);
+	}
+
+	/**
+	 * Put a Marker on the map at the specified parking location.
+	 * The marker object is stored.
+	 */
+	private void markParkingLocationOnMap(LatLng latLng)
+	{
+		parkingMarker = mapView.addMarker(new MarkerOptions()
+                                  .position(latLng));
+	}
+
+	/**
+	 * The whole application state.
+	 */
+	private static class State
+	{
+		public boolean isParked = false;
+
+		public LatLng latLng = new LatLng(51.063, 13.746);
 	}
 
 	@Override

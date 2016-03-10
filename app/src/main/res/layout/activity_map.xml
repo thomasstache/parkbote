@@ -13,11 +13,22 @@
         mapbox:access_token="@string/mapbox_accessToken" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_locateMe"
+        android:id="@+id/fab_parkHere"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
+        android:layout_gravity="bottom|center"
         android:layout_margin="@dimen/fab_margin"
+        android:tint="@android:color/white"
+        android:src="@drawable/ic_local_parking_black_24dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_leave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_margin="@dimen/fab_margin"
+        android:visibility="gone"
+        android:tint="@android:color/white"
         android:src="@android:drawable/ic_dialog_map" />
 
 </android.support.design.widget.CoordinatorLayout>
