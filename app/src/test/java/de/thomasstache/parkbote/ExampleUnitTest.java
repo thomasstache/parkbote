@@ -1,4 +1,4 @@
-package de.thomasstache.parkbote;
+package de.thomasstache.parklotse;
 
 import org.junit.Test;
 

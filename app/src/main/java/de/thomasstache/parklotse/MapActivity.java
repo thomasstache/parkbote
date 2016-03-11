@@ -1,4 +1,4 @@
-package de.thomasstache.parkbote;
+package de.thomasstache.parklotse;
 
 import android.Manifest;
 import android.content.SharedPreferences;
@@ -22,9 +22,9 @@ import com.mapbox.mapboxsdk.views.MapView;
 
 public class MapActivity extends AppCompatActivity
 {
-	private static final String TAG = "ParkboteApp";
+	private static final String TAG = "ParklotseApp";
 
-	private static final String PREF_FILE_KEY = "de.thomasstache.parkbote.PREFERENCE_FILE";
+	private static final String PREF_FILE_KEY = "de.thomasstache.parklotse.PREFERENCE_FILE";
 
 	private static final String PREF_PARKED = "isParked";
 	private static final String PREF_LOCATION_LON = "parkedLocationLongitude";
