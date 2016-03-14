@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
@@ -21,7 +22,7 @@ import com.mapbox.mapboxsdk.constants.Style;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.views.MapView;
 
-public class MapActivity extends AppCompatActivity
+public class MapActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback
 {
 	private static final String TAG = "MapActivity";
 
@@ -34,6 +35,8 @@ public class MapActivity extends AppCompatActivity
 	public static final int DEFAULT_ZOOM = 15;
 	public static final int DURATION_FAST_MS = 800;
 	public static final int DURATION_SLOW_MS = 1500;
+
+	private static final int PERMISSION_REQUEST_LOCATION = 128;
 
 	private State state;
 
@@ -90,7 +93,7 @@ public class MapActivity extends AppCompatActivity
 			String latitude = preferences.getString(PREF_LOCATION_LAT, "");
 			String longitude = preferences.getString(PREF_LOCATION_LON, "");
 
-			if (!latitude.isEmpty() && ! longitude.isEmpty())
+			if (!latitude.isEmpty() && !longitude.isEmpty())
 			{
 				state.latLng = parseLatLng(latitude, longitude);
 			}
@@ -132,13 +135,7 @@ public class MapActivity extends AppCompatActivity
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
 				&& ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
 		{
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
+			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION);
 
 			mapView.setMyLocationEnabled(false);
 			this.locationEnabled = false;
@@ -148,6 +145,25 @@ public class MapActivity extends AppCompatActivity
 			// show current user location
 			mapView.setMyLocationEnabled(true);
 			this.locationEnabled = true;
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+	{
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if (requestCode == PERMISSION_REQUEST_LOCATION)
+		{
+			if (grantResults.length > 0
+					&& grantResults[0] == PackageManager.PERMISSION_GRANTED)
+			{
+				// TODO: 14.03.2016 test if this works on Marshmellow
+				locationEnabled = true;
+				//noinspection ResourceType
+				mapView.setMyLocationEnabled(true);
+
+				updateFabVisibility();
+			}
 		}
 	}
 
