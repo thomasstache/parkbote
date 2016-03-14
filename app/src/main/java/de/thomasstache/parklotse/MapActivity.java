@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -22,7 +23,7 @@ import com.mapbox.mapboxsdk.views.MapView;
 
 public class MapActivity extends AppCompatActivity
 {
-	private static final String TAG = "ParklotseApp";
+	private static final String TAG = "MapActivity";
 
 	private static final String PREF_FILE_KEY = "de.thomasstache.parklotse.PREFERENCE_FILE";
 
@@ -31,6 +32,8 @@ public class MapActivity extends AppCompatActivity
 	private static final String PREF_LOCATION_LAT = "parkedLocationLatitude";
 
 	public static final int DEFAULT_ZOOM = 15;
+	public static final int DURATION_FAST_MS = 800;
+	public static final int DURATION_SLOW_MS = 1500;
 
 	private State state;
 
@@ -39,6 +42,9 @@ public class MapActivity extends AppCompatActivity
 
 	private FloatingActionButton fabLeave;
 	private FloatingActionButton fabPark;
+	private FloatingActionButton fabLocateMe;
+	// indicates whether location services can be used/offered to user
+	private boolean locationEnabled;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -58,6 +64,7 @@ public class MapActivity extends AppCompatActivity
 
 		setupParkButton();
 		setupLeaveButton();
+		setupLocateButton();
 
 		updateFabVisibility();
 
@@ -134,11 +141,13 @@ public class MapActivity extends AppCompatActivity
 			// for ActivityCompat#requestPermissions for more details.
 
 			mapView.setMyLocationEnabled(false);
+			this.locationEnabled = false;
 		}
 		else
 		{
 			// show current user location
 			mapView.setMyLocationEnabled(true);
+			this.locationEnabled = true;
 		}
 	}
 
@@ -159,13 +168,31 @@ public class MapActivity extends AppCompatActivity
 
 				if (bOk)
 				{
-					mapView.animateCamera(createCameraUpdate(state.latLng, DEFAULT_ZOOM + 2), 800, null);
+					mapView.animateCamera(createCameraUpdate(state.latLng, DEFAULT_ZOOM + 2), DURATION_FAST_MS, null);
 					updateFabVisibility();
 				}
 			}
 		});
 
 		this.fabPark = fab;
+	}
+
+	private void setupLocateButton()
+	{
+		final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_locateMe);
+		fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.white)));
+		fab.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				final Location location = mapView.getMyLocation();
+				if (location != null)
+					mapView.animateCamera(createCameraUpdate(new LatLng(location), (int) mapView.getZoom()), DURATION_SLOW_MS, null);
+			}
+		});
+
+		this.fabLocateMe = fab;
 	}
 
 	private void setupLeaveButton()
@@ -185,7 +212,7 @@ public class MapActivity extends AppCompatActivity
 
 				if (bOk)
 				{
-					mapView.animateCamera(createCameraUpdate(oldLatLng, DEFAULT_ZOOM), 800, null);
+					mapView.animateCamera(createCameraUpdate(oldLatLng, (int) (mapView.getZoom() - 2)), DURATION_FAST_MS, null);
 					updateFabVisibility();
 				}
 			}
@@ -198,6 +225,8 @@ public class MapActivity extends AppCompatActivity
 	{
 		fabPark.setVisibility(!state.isParked ? View.VISIBLE : View.GONE);
 		fabLeave.setVisibility(state.isParked ? View.VISIBLE : View.GONE);
+
+		fabLocateMe.setVisibility(locationEnabled ? View.VISIBLE : View.GONE);
 	}
 
 	/**
