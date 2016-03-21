@@ -157,7 +157,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 			if (grantResults.length > 0
 					&& grantResults[0] == PackageManager.PERMISSION_GRANTED)
 			{
-				// TODO: 14.03.2016 test if this works on Marshmellow
+				// TODO: 14.03.2016 test if this works on Marshmallow
 				locationEnabled = true;
 				//noinspection ResourceType
 				mapView.setMyLocationEnabled(true);
@@ -184,7 +184,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 				if (bOk)
 				{
-					mapView.animateCamera(createCameraUpdate(state.latLng, DEFAULT_ZOOM + 2), DURATION_FAST_MS, null);
+					mapView.animateCamera(createCameraUpdate(state.latLng, clampZoomIn(DEFAULT_ZOOM + 1)), DURATION_FAST_MS, null);
 					updateFabVisibility();
 				}
 			}
@@ -204,7 +204,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 			{
 				final Location location = mapView.getMyLocation();
 				if (location != null)
-					mapView.animateCamera(createCameraUpdate(new LatLng(location), (int) mapView.getZoom()), DURATION_SLOW_MS, null);
+					mapView.animateCamera(createCameraUpdate(new LatLng(location), clampZoomIn(DEFAULT_ZOOM)), DURATION_SLOW_MS, null);
 			}
 		});
 
@@ -228,13 +228,29 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 				if (bOk)
 				{
-					mapView.animateCamera(createCameraUpdate(oldLatLng, (int) (mapView.getZoom() - 2)), DURATION_FAST_MS, null);
+					mapView.animateCamera(createCameraUpdate(oldLatLng, clampZoomOut(DEFAULT_ZOOM)), DURATION_FAST_MS, null);
 					updateFabVisibility();
 				}
 			}
 		});
 
 		this.fabLeave = fab;
+	}
+
+	/**
+	 * Calculates a zoom value to zoom in at least to the desired value.
+	 */
+	private int clampZoomOut(final int targetZoom)
+	{
+		return Math.min((int) mapView.getZoom(), targetZoom);
+	}
+
+	/**
+	 * Calculates a zoom value to zoom out to maximum the desired value.
+	 */
+	private int clampZoomIn(final int targetZoom)
+	{
+		return Math.max(targetZoom, (int) mapView.getZoom());
 	}
 
 	private void updateFabVisibility()
