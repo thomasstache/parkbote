@@ -31,10 +31,6 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private static final String PREF_FILE_KEY = "de.thomasstache.parklotse.PREFERENCE_FILE";
 
-	private static final String PREF_PARKED = "isParked";
-	private static final String PREF_LOCATION_LON = "parkedLocationLongitude";
-	private static final String PREF_LOCATION_LAT = "parkedLocationLatitude";
-
 	public static final int DEFAULT_ZOOM = 15;
 	public static final int DURATION_FAST_MS = 800;
 	public static final int DURATION_SLOW_MS = 1500;
@@ -67,7 +63,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 		final SharedPreferences preferences = getAppPreferences();
 
-		state = loadStateFromPrefs(preferences);
+		state = State.createFromPrefs(preferences);
 
 		setupMapView();
 
@@ -90,51 +86,6 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	private SharedPreferences getAppPreferences()
 	{
 		return getSharedPreferences(PREF_FILE_KEY, MODE_PRIVATE);
-	}
-
-	private State loadStateFromPrefs(SharedPreferences preferences)
-	{
-		final State state = new State();
-
-		state.isParked = preferences.getBoolean(PREF_PARKED, false);
-		if (state.isParked)
-		{
-			// LatLng is only valid if we were parked
-			String latitude = preferences.getString(PREF_LOCATION_LAT, "");
-			String longitude = preferences.getString(PREF_LOCATION_LON, "");
-
-			if (!latitude.isEmpty() && !longitude.isEmpty())
-			{
-				state.latLng = parseLatLng(latitude, longitude);
-			}
-		}
-
-		return state;
-	}
-
-	private boolean saveStateToPrefs(SharedPreferences preferences)
-	{
-		final SharedPreferences.Editor editor = preferences.edit();
-
-		final String latitude;
-		final String longitude;
-
-		if (state.latLng != null)
-		{
-			latitude = Double.toString(state.latLng.getLatitude());
-			longitude = Double.toString(state.latLng.getLongitude());
-		}
-		else
-		{
-			latitude = "";
-			longitude = "";
-		}
-
-		editor.putBoolean(PREF_PARKED, state.isParked)
-		      .putString(PREF_LOCATION_LAT, latitude)
-		      .putString(PREF_LOCATION_LON, longitude);
-
-		return editor.commit();
 	}
 
 	private void setupMapView()
@@ -274,7 +225,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 		markParkingLocationOnMap(latLng);
 
-		return saveStateToPrefs(getAppPreferences());
+		return State.saveToPrefs(state, getAppPreferences());
 	}
 
 	/**
@@ -289,17 +240,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 		if (parkingMarker != null)
 			mapView.removeMarker(parkingMarker);
 
-		return saveStateToPrefs(getAppPreferences());
-	}
-
-	private LatLng parseLatLng(String latitude, String longitude)
-	{
-		final double lat = Double.parseDouble(latitude);
-		final double lon = Double.parseDouble(longitude);
-
-		// TODO add error checking
-
-		return new LatLng(lat, lon);
+		return State.saveToPrefs(state, getAppPreferences());
 	}
 
 	/**
@@ -324,16 +265,6 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	{
 		parkingMarker = mapView.addMarker(new MarkerOptions()
                                   .position(latLng));
-	}
-
-	/**
-	 * The whole application state.
-	 */
-	private static class State
-	{
-		public boolean isParked = false;
-
-		public LatLng latLng = new LatLng(51.063, 13.746);
 	}
 
 	@Override
