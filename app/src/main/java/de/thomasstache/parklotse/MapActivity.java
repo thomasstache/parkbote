@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -109,7 +110,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
 	{
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		if (requestCode == PERMISSION_REQUEST_LOCATION)
@@ -117,7 +118,6 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 			if (grantResults.length > 0
 					&& grantResults[0] == PackageManager.PERMISSION_GRANTED)
 			{
-				// TODO: 14.03.2016 test if this works on Marshmallow
 				locationEnabled = true;
 				//noinspection ResourceType
 				mapView.setMyLocationEnabled(true);
