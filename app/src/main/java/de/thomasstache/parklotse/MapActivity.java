@@ -22,6 +22,9 @@ import com.mapbox.mapboxsdk.constants.Style;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.views.MapView;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 public class MapActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback
 {
 	private static final String TAG = "MapActivity";
@@ -40,12 +43,17 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private State state;
 
-	private MapView mapView = null;
+	@Bind(R.id.map)
+	MapView mapView = null;
 	private Marker parkingMarker = null;
 
-	private FloatingActionButton fabLeave;
-	private FloatingActionButton fabPark;
-	private FloatingActionButton fabLocateMe;
+	@Bind(R.id.fab_leave)
+	FloatingActionButton fabLeave;
+	@Bind(R.id.fab_parkHere)
+	FloatingActionButton fabPark;
+	@Bind(R.id.fab_locateMe)
+	FloatingActionButton fabLocateMe;
+
 	// indicates whether location services can be used/offered to user
 	private boolean locationEnabled;
 
@@ -54,6 +62,8 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map);
+
+		ButterKnife.bind(this);
 
 		final SharedPreferences preferences = getAppPreferences();
 
@@ -129,7 +139,6 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private void setupMapView()
 	{
-		mapView = (MapView) findViewById(R.id.map);
 		mapView.setStyleUrl(Style.MAPBOX_STREETS);
 
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -169,9 +178,8 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private void setupParkButton()
 	{
-		final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_parkHere);
-		fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
-		fab.setOnClickListener(new View.OnClickListener()
+		fabPark.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
+		fabPark.setOnClickListener(new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View v)
@@ -189,15 +197,12 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 				}
 			}
 		});
-
-		this.fabPark = fab;
 	}
 
 	private void setupLocateButton()
 	{
-		final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_locateMe);
-		fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.white)));
-		fab.setOnClickListener(new View.OnClickListener()
+		fabLocateMe.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.white)));
+		fabLocateMe.setOnClickListener(new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View v)
@@ -207,14 +212,11 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 					mapView.animateCamera(createCameraUpdate(new LatLng(location), clampZoomIn(DEFAULT_ZOOM)), DURATION_SLOW_MS, null);
 			}
 		});
-
-		this.fabLocateMe = fab;
 	}
 
 	private void setupLeaveButton()
 	{
-		final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_leave);
-		fab.setOnClickListener(new View.OnClickListener()
+		fabLeave.setOnClickListener(new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View v)
@@ -233,8 +235,6 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 				}
 			}
 		});
-
-		this.fabLeave = fab;
 	}
 
 	/**
