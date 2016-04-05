@@ -1,7 +1,7 @@
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".MapActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
@@ -10,7 +10,7 @@
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        mapbox:access_token="@string/mapbox_accessToken" />
+        app:access_token="@string/mapbox_accessToken" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_parkHere"
