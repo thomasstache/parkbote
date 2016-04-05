@@ -19,6 +19,7 @@
         android:layout_gravity="bottom|center"
         android:layout_margin="@dimen/fab_margin"
         android:tint="@android:color/white"
+        app:backgroundTint="@color/colorPrimary"
         android:src="@drawable/ic_local_parking_black_24dp" />
 
     <android.support.design.widget.FloatingActionButton
@@ -39,6 +40,7 @@
         android:layout_margin="@dimen/fab_margin"
         android:visibility="gone"
         android:tint="@color/colorPrimaryDark"
+        app:backgroundTint="@android:color/white"
         android:src="@android:drawable/ic_menu_mylocation" />
 
 </android.support.design.widget.CoordinatorLayout>

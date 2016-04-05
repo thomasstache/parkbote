@@ -129,7 +129,6 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private void setupParkButton()
 	{
-		fabPark.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
 		fabPark.setOnClickListener(new View.OnClickListener()
 		{
 			@Override
@@ -152,7 +151,6 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private void setupLocateButton()
 	{
-		fabLocateMe.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.white)));
 		fabLocateMe.setOnClickListener(new View.OnClickListener()
 		{
 			@Override
