@@ -12,6 +12,14 @@
         android:layout_height="match_parent"
         app:access_token="@string/mapbox_accessToken" />
 
+    <ImageView
+        android:id="@+id/cross_hair"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:tint="@color/colorAccent"
+        android:src="@drawable/ic_games_black_24dp" />
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_parkHere"
         android:layout_width="wrap_content"

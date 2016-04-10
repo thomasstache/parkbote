@@ -13,6 +13,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
@@ -50,6 +51,9 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	FloatingActionButton fabPark;
 	@Bind(R.id.fab_locateMe)
 	FloatingActionButton fabLocateMe;
+
+	@Bind(R.id.cross_hair)
+	ImageView crossHair;
 
 	// indicates whether location services can be used/offered to user
 	private boolean locationEnabled;
@@ -204,6 +208,8 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private void updateFabVisibility()
 	{
+		crossHair.setVisibility(!state.isParked ? View.VISIBLE : View.GONE);
+
 		fabPark.setVisibility(!state.isParked ? View.VISIBLE : View.GONE);
 		fabLeave.setVisibility(state.isParked ? View.VISIBLE : View.GONE);
 
