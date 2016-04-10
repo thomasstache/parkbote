@@ -3,7 +3,6 @@ package de.thomasstache.parklotse;
 import android.Manifest;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,6 +12,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.mapbox.mapboxsdk.annotations.Marker;
@@ -55,6 +56,9 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	@Bind(R.id.cross_hair)
 	ImageView crossHair;
 
+	private Animation fadeInAnimation;
+	private Animation fadeOutAnimation;
+
 	// indicates whether location services can be used/offered to user
 	private boolean locationEnabled;
 
@@ -63,6 +67,9 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map);
+
+		fadeInAnimation = AnimationUtils.loadAnimation(this, R.anim.crosshair_fade_in);
+		fadeOutAnimation = AnimationUtils.loadAnimation(this, R.anim.crosshair_fade_out);
 
 		ButterKnife.bind(this);
 
@@ -80,7 +87,8 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 		setupLeaveButton();
 		setupLocateButton();
 
-		updateFabVisibility();
+		updateFabVisibility(false);
+		updateLocateMeButtonVisibility(false);
 
 		if (state.isParked)
 		{
@@ -126,7 +134,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 				//noinspection ResourceType
 				mapView.setMyLocationEnabled(true);
 
-				updateFabVisibility();
+				updateLocateMeButtonVisibility(true);
 			}
 		}
 	}
@@ -147,7 +155,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 				if (bOk)
 				{
 					mapView.animateCamera(createCameraUpdate(state.latLng, clampZoomIn(DEFAULT_ZOOM + 1)), DURATION_FAST_MS, null);
-					updateFabVisibility();
+					updateFabVisibility(true);
 				}
 			}
 		});
@@ -184,7 +192,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 				if (bOk)
 				{
 					mapView.animateCamera(createCameraUpdate(oldLatLng, clampZoomOut(DEFAULT_ZOOM)), DURATION_FAST_MS, null);
-					updateFabVisibility();
+					updateFabVisibility(true);
 				}
 			}
 		});
@@ -206,14 +214,22 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 		return Math.max(targetZoom, (int) mapView.getZoom());
 	}
 
-	private void updateFabVisibility()
+	private void updateFabVisibility(boolean bAnimate)
 	{
 		crossHair.setVisibility(!state.isParked ? View.VISIBLE : View.GONE);
 
 		fabPark.setVisibility(!state.isParked ? View.VISIBLE : View.GONE);
 		fabLeave.setVisibility(state.isParked ? View.VISIBLE : View.GONE);
 
+		if (bAnimate)
+			crossHair.startAnimation(state.isParked ? fadeOutAnimation : fadeInAnimation);
+	}
+
+	private void updateLocateMeButtonVisibility(boolean bAnimate)
+	{
 		fabLocateMe.setVisibility(locationEnabled ? View.VISIBLE : View.GONE);
+		if (bAnimate)
+			fabLocateMe.startAnimation(fadeInAnimation);
 	}
 
 	/**
