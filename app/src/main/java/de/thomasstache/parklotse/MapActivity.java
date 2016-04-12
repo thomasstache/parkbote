@@ -87,8 +87,8 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 		setupLeaveButton();
 		setupLocateButton();
 
-		updateFabVisibility(false);
-		updateLocateMeButtonVisibility(false);
+		updateControlsVisibility(false);
+		updateLocateMeButtonVisibility();
 
 		if (state.isParked)
 		{
@@ -101,6 +101,9 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 		return getSharedPreferences(PREF_FILE_KEY, MODE_PRIVATE);
 	}
 
+	/**
+	 * Configures the MapView, checks for location access permissions, and eventually requests them.
+	 */
 	private void setupMapView()
 	{
 		mapView.setStyleUrl(Style.MAPBOX_STREETS);
@@ -134,7 +137,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 				//noinspection ResourceType
 				mapView.setMyLocationEnabled(true);
 
-				updateLocateMeButtonVisibility(true);
+				fabLocateMe.show();
 			}
 		}
 	}
@@ -148,14 +151,14 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 			{
 				final boolean bOk = saveCurrentLocation();
 
-				Snackbar.make(v, bOk ? "Successfully parked." : "Location not saved...", Snackbar.LENGTH_LONG)
-				        .setAction("Action", null)
-				        .show();
-
 				if (bOk)
 				{
 					mapView.animateCamera(createCameraUpdate(state.latLng, clampZoomIn(DEFAULT_ZOOM + 1)), DURATION_FAST_MS, null);
-					updateFabVisibility(true);
+					updateControlsVisibility(true);
+				}
+				else
+				{
+					Snackbar.make(v, "Location not saved...", Snackbar.LENGTH_LONG).show();
 				}
 			}
 		});
@@ -186,13 +189,14 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 				boolean bOk = clearParkingLocation();
 
-				Snackbar.make(v, bOk ? "Parked out." : "Update not saved...", Snackbar.LENGTH_LONG)
-				        .show();
-
 				if (bOk)
 				{
 					mapView.animateCamera(createCameraUpdate(oldLatLng, clampZoomOut(DEFAULT_ZOOM)), DURATION_FAST_MS, null);
-					updateFabVisibility(true);
+					updateControlsVisibility(true);
+				}
+				else
+				{
+					Snackbar.make(v, "Update not saved...", Snackbar.LENGTH_LONG).show();
 				}
 			}
 		});
@@ -214,22 +218,40 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 		return Math.max(targetZoom, (int) mapView.getZoom());
 	}
 
-	private void updateFabVisibility(boolean bAnimate)
+	private void updateControlsVisibility(boolean bAnimate)
 	{
 		crossHair.setVisibility(!state.isParked ? View.VISIBLE : View.GONE);
 
-		fabPark.setVisibility(!state.isParked ? View.VISIBLE : View.GONE);
-		fabLeave.setVisibility(state.isParked ? View.VISIBLE : View.GONE);
-
 		if (bAnimate)
+		{
 			crossHair.startAnimation(state.isParked ? fadeOutAnimation : fadeInAnimation);
+
+			if (state.isParked)
+				swapFABsWithAnimation(fabLeave, fabPark);
+			else
+				swapFABsWithAnimation(fabPark, fabLeave);
+		}
+		else
+		{
+			fabPark.setVisibility(!state.isParked ? View.VISIBLE : View.INVISIBLE);
+			fabLeave.setVisibility(state.isParked ? View.VISIBLE : View.INVISIBLE);
+		}
 	}
 
-	private void updateLocateMeButtonVisibility(boolean bAnimate)
+	private void swapFABsWithAnimation(@NonNull final FloatingActionButton fabIncoming,
+	                                   @NonNull final FloatingActionButton fabOutgoing)
+	{
+		// layer the incoming button on top of the visible one
+		fabOutgoing.setTranslationZ(-1f);
+		fabIncoming.setTranslationZ(1f);
+
+		fabIncoming.show();
+		fabOutgoing.hide();
+	}
+
+	private void updateLocateMeButtonVisibility()
 	{
 		fabLocateMe.setVisibility(locationEnabled ? View.VISIBLE : View.GONE);
-		if (bAnimate)
-			fabLocateMe.startAnimation(fadeInAnimation);
 	}
 
 	/**
@@ -284,7 +306,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	private void markParkingLocationOnMap(LatLng latLng)
 	{
 		parkingMarker = mapView.addMarker(new MarkerOptions()
-                                  .position(latLng));
+				                                  .position(latLng));
 	}
 
 	@Override
@@ -313,6 +335,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	{
 		super.onResume();
 		mapView.onResume();
+		// TODO check location permissions are still available
 	}
 
 	@Override
