@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
 
 android {
     compileSdkVersion 24
@@ -23,6 +24,7 @@ ext {
     supportLibVersion = '24.2.1'
 //    mapboxSdkVersion = '4.0.1'
     mapboxSdkVersion = '4.1.1'
+    butterKnifeVersion = '8.4.0'
 }
 
 dependencies {
@@ -30,8 +32,10 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile "com.android.support:design:$supportLibVersion"
     compile "com.android.support:appcompat-v7:$supportLibVersion"
-    compile 'com.jakewharton:butterknife:7.0.1'
-    compile ("com.mapbox.mapboxsdk:mapbox-android-sdk:$mapboxSdkVersion@aar"){
-        transitive=true
+    compile "com.jakewharton:butterknife:$butterKnifeVersion"
+    compile("com.mapbox.mapboxsdk:mapbox-android-sdk:$mapboxSdkVersion@aar") {
+        transitive = true
     }
+
+    apt "com.jakewharton:butterknife-compiler:$butterKnifeVersion"
 }

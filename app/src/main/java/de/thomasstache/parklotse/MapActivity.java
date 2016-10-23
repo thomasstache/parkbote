@@ -26,7 +26,7 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MapActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback, OnMapReadyCallback
@@ -43,19 +43,19 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private State mState;
 
-	@Bind(R.id.map)
+	@BindView(R.id.map)
 	MapView mMapView = null;
 	MapboxMap mMap = null;
 	private Marker parkingMarker = null;
 
-	@Bind(R.id.fab_leave)
+	@BindView(R.id.fab_leave)
 	FloatingActionButton fabLeave;
-	@Bind(R.id.fab_parkHere)
+	@BindView(R.id.fab_parkHere)
 	FloatingActionButton fabPark;
-	@Bind(R.id.fab_locateMe)
+	@BindView(R.id.fab_locateMe)
 	FloatingActionButton fabLocateMe;
 
-	@Bind(R.id.cross_hair)
+	@BindView(R.id.cross_hair)
 	ImageView ivCrossHair;
 
 	private Animation fadeInAnimation;
