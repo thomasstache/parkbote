@@ -22,8 +22,7 @@ android {
 
 ext {
     supportLibVersion = '24.2.1'
-//    mapboxSdkVersion = '4.0.1'
-    mapboxSdkVersion = '4.1.1'
+    mapboxSdkVersion = '4.2.0-beta.3'
     butterKnifeVersion = '8.4.0'
 }
 
