@@ -51,6 +51,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:visibility="gone"
+        tools:visibility="visible"
         android:tint="@color/colorPrimaryDark"
         app:backgroundTint="@android:color/white"
         android:src="@android:drawable/ic_menu_mylocation" />
