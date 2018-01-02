@@ -62,7 +62,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	private Animation fadeOutAnimation;
 
 	// indicates whether location services can be used/offered to user
-	private boolean mLocationEnabled;
+	private boolean isLocationEnabled;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -89,7 +89,6 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 		setupLocateButton();
 
 		updateControlsVisibility(false);
-		updateLocateMeButtonVisibility();
 	}
 
 	private SharedPreferences getAppPreferences()
@@ -103,7 +102,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 		mMap = mapboxMap;
 
 		mMap.moveCamera(createCameraUpdate(mState.latLng, DEFAULT_ZOOM));
-		mMap.setMyLocationEnabled(mLocationEnabled);
+		mMap.setMyLocationEnabled(isLocationEnabled);
 
 		if (mState.isParked)
 		{
@@ -116,17 +115,16 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	 */
 	private void checkLocationPermissions()
 	{
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-				&& ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
 		{
 			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION);
 
-			mLocationEnabled = false;
+			isLocationEnabled = false;
 		}
 		else
 		{
 			// show current user location
-			mLocationEnabled = true;
+			isLocationEnabled = true;
 		}
 	}
 
@@ -139,7 +137,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 			if (grantResults.length > 0
 					&& grantResults[0] == PackageManager.PERMISSION_GRANTED)
 			{
-				mLocationEnabled = true;
+				isLocationEnabled = true;
 				//noinspection ResourceType
 				if (mMap != null)
 					mMap.setMyLocationEnabled(true);
@@ -156,19 +154,24 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 			@Override
 			public void onClick(View v)
 			{
-				final boolean bOk = saveCurrentLocation();
-
-				if (bOk)
-				{
-					animateCameraSafely(createCameraUpdate(mState.latLng, clampZoomIn(DEFAULT_ZOOM + 1)));
-					updateControlsVisibility(true);
-				}
-				else
-				{
-					Snackbar.make(v, "Location not saved...", Snackbar.LENGTH_LONG).show();
-				}
+				onClickPark();
 			}
 		});
+	}
+
+	private void onClickPark()
+	{
+		final boolean bOk = saveCurrentLocation();
+
+		if (bOk)
+		{
+			animateCameraSafely(createCameraUpdate(mState.latLng, clampZoomIn(DEFAULT_ZOOM + 1)));
+			updateControlsVisibility(true);
+		}
+		else
+		{
+			Snackbar.make(fabPark, "Location not saved...", Snackbar.LENGTH_LONG).show();
+		}
 	}
 
 	private void setupLocateButton()
@@ -178,13 +181,18 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 			@Override
 			public void onClick(View v)
 			{
-				if (mMap == null) return;
-
-				final Location location = mMap.getMyLocation();
-				if (location != null)
-					animateCameraSafely(createCameraUpdate(new LatLng(location), clampZoomIn(DEFAULT_ZOOM)), DURATION_SLOW_MS);
+				onClickLocate();
 			}
 		});
+	}
+
+	private void onClickLocate()
+	{
+		if (mMap == null) return;
+
+		final Location location = mMap.getMyLocation();
+		if (location != null)
+			animateCameraSafely(createCameraUpdate(new LatLng(location), clampZoomIn(DEFAULT_ZOOM)), DURATION_SLOW_MS);
 	}
 
 	private void setupLeaveButton()
@@ -194,21 +202,26 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 			@Override
 			public void onClick(View v)
 			{
-				final LatLng oldLatLng = new LatLng(mState.latLng);
-
-				boolean bOk = clearParkingLocation();
-
-				if (bOk)
-				{
-					animateCameraSafely(createCameraUpdate(oldLatLng, clampZoomOut(DEFAULT_ZOOM)));
-					updateControlsVisibility(true);
-				}
-				else
-				{
-					Snackbar.make(v, "Update not saved...", Snackbar.LENGTH_LONG).show();
-				}
+				onClickLeave();
 			}
 		});
+	}
+
+	private void onClickLeave()
+	{
+		final LatLng oldLatLng = new LatLng(mState.latLng);
+
+		boolean bOk = clearParkingLocation();
+
+		if (bOk)
+		{
+			animateCameraSafely(createCameraUpdate(oldLatLng, clampZoomOut(DEFAULT_ZOOM)));
+			updateControlsVisibility(true);
+		}
+		else
+		{
+			Snackbar.make(fabLeave, "Update not saved...", Snackbar.LENGTH_LONG).show();
+		}
 	}
 
 	/**
@@ -230,7 +243,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	 */
 	private int clampZoomOut(final int targetZoom)
 	{
-		return Math.min((int) mMap.getCameraPosition().zoom, targetZoom);
+		return Math.min(currentZoom(), targetZoom);
 	}
 
 	/**
@@ -238,7 +251,12 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	 */
 	private int clampZoomIn(final int targetZoom)
 	{
-		return Math.max(targetZoom, (int) mMap.getCameraPosition().zoom);
+		return Math.max(targetZoom, currentZoom());
+	}
+
+	private int currentZoom()
+	{
+		return (int) mMap.getCameraPosition().zoom;
 	}
 
 	private void updateControlsVisibility(boolean bAnimate)
@@ -274,7 +292,8 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private void updateLocateMeButtonVisibility()
 	{
-		fabLocateMe.setVisibility(mLocationEnabled ? View.VISIBLE : View.GONE);
+		isLocationEnabled = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+		fabLocateMe.setVisibility(isLocationEnabled ? View.VISIBLE : View.GONE);
 	}
 
 	/**
@@ -312,7 +331,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	 * Returns a {@code CameraUpdate} to {@link MapboxMap#moveCamera(CameraUpdate) move} or
 	 * {@link MapboxMap#animateCamera(CameraUpdate) smoothly fly} the {@code MapView} to a new viewport.
 	 */
-	private CameraUpdate createCameraUpdate(LatLng latLng, int zoom)
+	private static CameraUpdate createCameraUpdate(LatLng latLng, int zoom)
 	{
 		CameraPosition cam = new CameraPosition.Builder()
 				.target(latLng)
@@ -332,7 +351,15 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 			return;
 
 		parkingMarker = mMap.addMarker(new MarkerOptions()
-				                                  .position(latLng));
+				                               .position(latLng));
+	}
+
+	@Override
+	protected void onStart()
+	{
+		super.onStart();
+
+		updateLocateMeButtonVisibility();
 	}
 
 	@Override
@@ -347,7 +374,6 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	{
 		super.onResume();
 		mMapView.onResume();
-		// TODO check location permissions are still available
 	}
 
 	@Override
