@@ -165,7 +165,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 		if (bOk)
 		{
-			animateCameraSafely(createCameraUpdate(mState.latLng, clampZoomIn(DEFAULT_ZOOM + 1)));
+			animateCamera(mState.latLng, currentZoom());
 			updateControlsVisibility(true);
 		}
 		else
@@ -192,7 +192,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 		final Location location = mMap.getMyLocation();
 		if (location != null)
-			animateCameraSafely(createCameraUpdate(new LatLng(location), clampZoomIn(DEFAULT_ZOOM)), DURATION_SLOW_MS);
+			animateCamera(createCameraUpdate(new LatLng(location), clampZoomIn(DEFAULT_ZOOM)), DURATION_SLOW_MS);
 	}
 
 	private void setupLeaveButton()
@@ -215,7 +215,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 		if (bOk)
 		{
-			animateCameraSafely(createCameraUpdate(oldLatLng, clampZoomOut(DEFAULT_ZOOM)));
+			animateCamera(oldLatLng, currentZoom());
 			updateControlsVisibility(true);
 		}
 		else
@@ -227,12 +227,13 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	/**
 	 * Animates the map's camera, but ensuring the map is ready.
 	 */
-	private void animateCameraSafely(CameraUpdate cameraUpdate)
+	private void animateCamera(LatLng latLng, int zoom)
 	{
-		animateCameraSafely(cameraUpdate, DURATION_FAST_MS);
+		final CameraUpdate cameraUpdate = createCameraUpdate(latLng, zoom);
+		animateCamera(cameraUpdate, DURATION_FAST_MS);
 	}
 
-	private void animateCameraSafely(CameraUpdate cameraUpdate, int duration)
+	private void animateCamera(CameraUpdate cameraUpdate, int duration)
 	{
 		if (mMap != null)
 			mMap.animateCamera(cameraUpdate, duration, null);
