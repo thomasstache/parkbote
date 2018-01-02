@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Parklotse</string>
     <string name="title_activity_map">Parklotse</string>
+    <string name="desc_location_pinhair">Location Pinhair</string>
 </resources>
