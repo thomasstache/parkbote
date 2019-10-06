@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "de.thomasstache.parklotse"
         minSdkVersion 21
-        targetSdkVersion 25
+        targetSdkVersion 28
         versionCode 2
         versionName "0.9.1"
     }
@@ -22,7 +22,7 @@ android {
 }
 
 ext {
-    supportLibVersion = '26.1.0'
+    supportLibVersion = '28.0.0'
     mapboxSdkVersion = '4.2.2'
     butterKnifeVersion = '8.8.1'
 }
