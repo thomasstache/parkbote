@@ -1,7 +1,9 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         applicationId "de.thomasstache.parklotse"
@@ -37,7 +39,13 @@ dependencies {
         transitive = true
     }
 
+    implementation "androidx.core:core-ktx:1.1.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
     testImplementation 'junit:junit:4.12'
 
     annotationProcessor "com.jakewharton:butterknife-compiler:$butterKnifeVersion"
+}
+repositories {
+    mavenCentral()
 }
