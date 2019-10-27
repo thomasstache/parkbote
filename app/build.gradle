@@ -7,8 +7,8 @@ android {
         applicationId "de.thomasstache.parklotse"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 2
-        versionName "0.9.1"
+        versionCode 3
+        versionName "0.9.5"
     }
     buildTypes {
         release {
@@ -19,11 +19,15 @@ android {
             applicationIdSuffix ".dev"
         }
     }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
 }
 
 ext {
     supportLibVersion = '28.0.0'
-    mapboxSdkVersion = '5.0.2'
+    mapboxSdkVersion = '8.4.0'
     butterKnifeVersion = '8.8.1'
 }
 

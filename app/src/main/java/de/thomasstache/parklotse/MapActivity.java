@@ -22,9 +22,13 @@ import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.location.LocationComponent;
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -45,7 +49,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	@BindView(R.id.map)
 	MapView mapView = null;
-	MapboxMap mMap = null;
+	private MapboxMap mapboxMap = null;
 	private Marker parkingMarker = null;
 
 	@BindView(R.id.fab_leave)
@@ -97,20 +101,34 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	}
 
 	@Override
-	public void onMapReady(@NonNull MapboxMap mapboxMap)
+	public void onMapReady(@NonNull MapboxMap map)
 	{
-		mMap = mapboxMap;
+		mapboxMap = map;
+		mapboxMap.setStyle(Style.MAPBOX_STREETS, style -> {
+		    enableLocationComponent(style);
 
-		mMap.moveCamera(createCameraUpdate(mState.latLng, DEFAULT_ZOOM));
-		mMap.setMyLocationEnabled(isLocationEnabled);
+		    mapboxMap.moveCamera(createCameraUpdate(mState.latLng, DEFAULT_ZOOM));
 
-		if (mState.isParked)
-		{
-			markParkingLocationOnMap(mState.latLng);
-		}
+			if (mState.isParked)
+			{
+				markParkingLocationOnMap(mState.latLng);
+			}
+		});
 	}
 
-	/**
+    private void enableLocationComponent(@NonNull Style style) {
+        if (isLocationEnabled) {
+            LocationComponent locationComponent = mapboxMap.getLocationComponent();
+
+            locationComponent.activateLocationComponent(
+                    LocationComponentActivationOptions.builder(this, style).build());
+
+            locationComponent.setRenderMode(RenderMode.COMPASS);
+            locationComponent.setLocationComponentEnabled(true);
+        }
+    }
+
+    /**
 	 * Checks for location access permissions, and eventually requests them.
 	 */
 	private void checkLocationPermissions()
@@ -138,9 +156,12 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 					&& grantResults[0] == PackageManager.PERMISSION_GRANTED)
 			{
 				isLocationEnabled = true;
-				//noinspection ResourceType
-				if (mMap != null)
-					mMap.setMyLocationEnabled(true);
+				if (mapboxMap != null)
+				{
+                    mapboxMap.getStyle(style -> {
+                        enableLocationComponent(style);
+                    });
+                }
 
 				fabLocateMe.show();
 			}
@@ -188,9 +209,9 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private void onClickLocate()
 	{
-		if (mMap == null) return;
+		if (mapboxMap == null) return;
 
-		final Location location = mMap.getMyLocation();
+		final Location location = mapboxMap.getLocationComponent().getLastKnownLocation();
 		if (location != null)
 			animateCamera(createCameraUpdate(new LatLng(location), clampZoomIn(DEFAULT_ZOOM)), DURATION_SLOW_MS);
 	}
@@ -235,8 +256,8 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private void animateCamera(CameraUpdate cameraUpdate, int duration)
 	{
-		if (mMap != null)
-			mMap.animateCamera(cameraUpdate, duration, null);
+		if (mapboxMap != null)
+			mapboxMap.animateCamera(cameraUpdate, duration, null);
 	}
 
 	/**
@@ -257,7 +278,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private int currentZoom()
 	{
-		return (int) mMap.getCameraPosition().zoom;
+		return (int) mapboxMap.getCameraPosition().zoom;
 	}
 
 	private void updateControlsVisibility(boolean bAnimate)
@@ -303,7 +324,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	 */
 	private boolean saveCurrentLocation()
 	{
-		final LatLng latLng = mMap.getCameraPosition().target;
+		final LatLng latLng = mapboxMap.getCameraPosition().target;
 
 		mState.isParked = true;
 		mState.latLng = latLng;
@@ -323,7 +344,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 		mState.latLng = null;
 
 		if (parkingMarker != null)
-			mMap.removeMarker(parkingMarker);
+			mapboxMap.removeMarker(parkingMarker);
 
 		return State.saveToPrefs(mState, getAppPreferences());
 	}
@@ -348,10 +369,10 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	 */
 	private void markParkingLocationOnMap(LatLng latLng)
 	{
-		if (mMap == null)
+		if (mapboxMap == null)
 			return;
 
-		parkingMarker = mMap.addMarker(new MarkerOptions()
+		parkingMarker = mapboxMap.addMarker(new MarkerOptions()
 				                               .position(latLng));
 	}
 
