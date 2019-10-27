@@ -1,29 +1,27 @@
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".MapActivity"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    tools:context=".MapActivity">
 
     <com.mapbox.mapboxsdk.maps.MapView
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:style_url="@string/style_mapbox_streets"
-        app:tilt_enabled="false"
-        app:rotate_enabled="false"
-        app:zoom="15"
-        app:access_token="@string/mapbox_accessToken" />
+        app:mapbox_cameraZoom="15"
+        app:mapbox_styleUrl="@string/mapbox_style_mapbox_streets"
+        app:mapbox_uiRotateGestures="false"
+        app:mapbox_uiTiltGestures="false" />
 
     <ImageView
         android:id="@+id/cross_hair"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:tint="@color/colorAccent"
+        android:contentDescription="@string/desc_location_pinhair"
         android:src="@drawable/ic_games_black_24dp"
-        android:contentDescription="@string/desc_location_pinhair" />
+        android:tint="@color/colorAccent" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_parkHere"
@@ -31,9 +29,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
         android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_local_parking_black_24dp"
         android:tint="@android:color/white"
-        app:backgroundTint="@color/colorPrimary"
-        android:src="@drawable/ic_local_parking_black_24dp" />
+        app:backgroundTint="@color/colorPrimary" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_leave"
@@ -41,9 +39,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
         android:layout_margin="@dimen/fab_margin"
-        android:visibility="gone"
+        android:src="@android:drawable/ic_dialog_map"
         android:tint="@android:color/white"
-        android:src="@android:drawable/ic_dialog_map" />
+        android:visibility="gone" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_locateMe"
@@ -51,10 +49,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:visibility="gone"
-        tools:visibility="visible"
+        android:src="@android:drawable/ic_menu_mylocation"
         android:tint="@color/colorPrimaryDark"
+        android:visibility="gone"
         app:backgroundTint="@android:color/white"
-        android:src="@android:drawable/ic_menu_mylocation" />
+        tools:visibility="visible" />
 
 </android.support.design.widget.CoordinatorLayout>

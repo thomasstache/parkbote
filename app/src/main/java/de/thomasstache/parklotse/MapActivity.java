@@ -44,7 +44,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	private State mState;
 
 	@BindView(R.id.map)
-	MapView mMapView = null;
+	MapView mapView = null;
 	MapboxMap mMap = null;
 	private Marker parkingMarker = null;
 
@@ -81,8 +81,8 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 		checkLocationPermissions();
 
-		mMapView.onCreate(savedInstanceState);
-		mMapView.getMapAsync(this);
+		mapView.onCreate(savedInstanceState);
+		mapView.getMapAsync(this);
 
 		setupParkButton();
 		setupLeaveButton();
@@ -359,42 +359,48 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	protected void onStart()
 	{
 		super.onStart();
-
+        mapView.onStart();
 		updateLocateMeButtonVisibility();
 	}
 
-	@Override
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mapView.onStop();
+    }
+
+    @Override
 	public void onPause()
 	{
 		super.onPause();
-		mMapView.onPause();
+		mapView.onPause();
 	}
 
 	@Override
 	public void onResume()
 	{
 		super.onResume();
-		mMapView.onResume();
+		mapView.onResume();
 	}
 
 	@Override
 	protected void onDestroy()
 	{
 		super.onDestroy();
-		mMapView.onDestroy();
+		mapView.onDestroy();
 	}
 
 	@Override
 	public void onLowMemory()
 	{
 		super.onLowMemory();
-		mMapView.onLowMemory();
+		mapView.onLowMemory();
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState)
 	{
 		super.onSaveInstanceState(outState);
-		mMapView.onSaveInstanceState(outState);
+		mapView.onSaveInstanceState(outState);
 	}
 }
