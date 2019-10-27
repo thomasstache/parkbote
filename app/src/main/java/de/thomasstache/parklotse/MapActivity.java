@@ -107,11 +107,11 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 		mapboxMap.setStyle(Style.MAPBOX_STREETS, style -> {
 		    enableLocationComponent(style);
 
-		    mapboxMap.moveCamera(createCameraUpdate(mState.latLng, DEFAULT_ZOOM));
+		    mapboxMap.moveCamera(createCameraUpdate(mState.getLatLng(), DEFAULT_ZOOM));
 
-			if (mState.isParked)
+			if (mState.isParked())
 			{
-				markParkingLocationOnMap(mState.latLng);
+				markParkingLocationOnMap(mState.getLatLng());
 			}
 		});
 	}
@@ -186,7 +186,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 		if (bOk)
 		{
-			animateCamera(mState.latLng, currentZoom());
+			animateCamera(mState.getLatLng(), currentZoom());
 			updateControlsVisibility(true);
 		}
 		else
@@ -230,7 +230,7 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private void onClickLeave()
 	{
-		final LatLng oldLatLng = new LatLng(mState.latLng);
+		final LatLng oldLatLng = new LatLng(mState.getLatLng());
 
 		boolean bOk = clearParkingLocation();
 
@@ -283,21 +283,21 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 
 	private void updateControlsVisibility(boolean bAnimate)
 	{
-		ivCrossHair.setVisibility(!mState.isParked ? View.VISIBLE : View.GONE);
+		ivCrossHair.setVisibility(!mState.isParked() ? View.VISIBLE : View.GONE);
 
 		if (bAnimate)
 		{
-			ivCrossHair.startAnimation(mState.isParked ? fadeOutAnimation : fadeInAnimation);
+			ivCrossHair.startAnimation(mState.isParked() ? fadeOutAnimation : fadeInAnimation);
 
-			if (mState.isParked)
+			if (mState.isParked())
 				swapFABsWithAnimation(fabLeave, fabPark);
 			else
 				swapFABsWithAnimation(fabPark, fabLeave);
 		}
 		else
 		{
-			fabPark.setVisibility(!mState.isParked ? View.VISIBLE : View.INVISIBLE);
-			fabLeave.setVisibility(mState.isParked ? View.VISIBLE : View.INVISIBLE);
+			fabPark.setVisibility(!mState.isParked() ? View.VISIBLE : View.INVISIBLE);
+			fabLeave.setVisibility(mState.isParked() ? View.VISIBLE : View.INVISIBLE);
 		}
 	}
 
@@ -326,8 +326,8 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	{
 		final LatLng latLng = mapboxMap.getCameraPosition().target;
 
-		mState.isParked = true;
-		mState.latLng = latLng;
+		mState.setParked(true);
+		mState.setLatLng(latLng);
 
 		markParkingLocationOnMap(latLng);
 
@@ -340,8 +340,8 @@ public class MapActivity extends AppCompatActivity implements OnRequestPermissio
 	 */
 	private boolean clearParkingLocation()
 	{
-		mState.isParked = false;
-		mState.latLng = null;
+		mState.setParked(false);
+		mState.setLatLng(null);
 
 		if (parkingMarker != null)
 			mapboxMap.removeMarker(parkingMarker);
