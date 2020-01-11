@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 29
@@ -28,7 +28,7 @@ android {
 }
 
 ext {
-    butterKnifeVersion = '10.2.0'
+    butterKnifeVersion = '10.2.1'
 }
 
 dependencies {
@@ -40,9 +40,9 @@ dependencies {
     }
 
     implementation "androidx.core:core-ktx:1.1.0"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
 
     annotationProcessor "com.jakewharton:butterknife-compiler:$butterKnifeVersion"
 }
