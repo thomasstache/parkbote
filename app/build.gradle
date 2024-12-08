@@ -25,6 +25,7 @@ android {
         targetSdkVersion 33
         versionCode 4
         versionName "0.9.8"
+        archivesBaseName = "parklotse-$versionName"
     }
     buildTypes {
         release {
