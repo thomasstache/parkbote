@@ -9,8 +9,8 @@ repositories {
         }
         credentials {
             username = 'mapbox'
-            // Use the secret token you stored in gradle.properties as the password
-            password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
+            // Use the secret token stored in environment as the password
+            password = System.getenv('MAPBOX_DOWNLOADS_TOKEN') ?: ""
         }
     }
 }
